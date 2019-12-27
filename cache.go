@@ -104,8 +104,8 @@ func (c *Cache) newVault(key interface{}, update <-chan interface{}, ttl time.Du
 			}
 
 		case <-t.C:
-			c.expireFn(key, value)
 			c.m.Delete(key)
+			c.expireFn(key, value)
 			return
 
 		case <-c.done:
