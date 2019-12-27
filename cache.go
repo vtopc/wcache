@@ -105,6 +105,7 @@ func (c *Cache) newVault(ttl time.Duration, update <-chan interface{}) {
 
 		case <-t.C:
 			c.expireFn(value)
+			// TODO: remove record from map!!!
 			return
 
 		case <-c.done:
