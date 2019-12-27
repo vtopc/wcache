@@ -90,8 +90,8 @@ func (c *Cache) SetWithTTL(key, value interface{}, ttl time.Duration) error {
 func (c *Cache) newVault(key interface{}, update <-chan interface{}, ttl time.Duration) {
 	var value interface{}
 
-	t := time.NewTimer(ttl)
-	defer t.Stop()
+	timer := time.NewTimer(ttl)
+	defer timer.Stop()
 
 	for {
 		select {
@@ -103,7 +103,7 @@ func (c *Cache) newVault(key interface{}, update <-chan interface{}, ttl time.Du
 				value = newValue
 			}
 
-		case <-t.C:
+		case <-timer.C:
 			c.m.Delete(key)
 			c.expireFn(key, value)
 			return
