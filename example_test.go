@@ -10,8 +10,8 @@ import (
 
 func ExampleCache() {
 	// will be called when record is expired:
-	expireFn := func(value interface{}) {
-		fmt.Println(value.(string))
+	expireFn := func(key, value interface{}) {
+		fmt.Printf("%d: %s\n", key, value)
 	}
 
 	c := wcache.New(context.Background(), time.Second, expireFn)
@@ -23,8 +23,8 @@ func ExampleCache() {
 	time.Sleep(3 * time.Second)
 
 	// Output:
-	// to expire first
-	// to expire second
+	// 1: to expire first
+	// 2: to expire second
 }
 
 func ExampleCache_Sync() {

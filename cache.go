@@ -25,7 +25,7 @@ type Cache struct {
 type CompareFn func(old, new interface{}) (result interface{})
 
 // ExpireFn will be called when record is expired
-type ExpireFn func(value interface{})
+type ExpireFn func(key, value interface{})
 
 type item struct {
 	update chan<- interface{}
@@ -63,7 +63,7 @@ func (c *Cache) SetWithTTL(key, value interface{}, ttl time.Duration) error {
 	} else {
 		// create new one
 		update := make(chan interface{}, 1)
-		go c.newVault(ttl, update)
+		go c.newVault(key, update, ttl)
 		i = item{update: update}
 		c.m.Store(key, i)
 	}
@@ -87,7 +87,7 @@ func (c *Cache) SetWithTTL(key, value interface{}, ttl time.Duration) error {
 // }
 
 // newVault - creates storage for value
-func (c *Cache) newVault(ttl time.Duration, update <-chan interface{}) {
+func (c *Cache) newVault(key interface{}, update <-chan interface{}, ttl time.Duration) {
 	var value interface{}
 
 	t := time.NewTimer(ttl)
@@ -104,12 +104,12 @@ func (c *Cache) newVault(ttl time.Duration, update <-chan interface{}) {
 			}
 
 		case <-t.C:
-			c.expireFn(value)
-			// TODO: remove record from map!!!
+			c.expireFn(key, value)
+			c.m.Delete(key)
 			return
 
 		case <-c.done:
-			c.expireFn(value)
+			c.expireFn(key, value)
 			return
 		}
 	}
