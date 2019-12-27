@@ -9,6 +9,7 @@ import (
 )
 
 func ExampleCache() {
+	// will be called when record is expired:
 	expireFn := func(value interface{}) {
 		fmt.Println(value.(string))
 	}
