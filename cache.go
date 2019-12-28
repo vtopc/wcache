@@ -24,7 +24,7 @@ type Cache struct {
 // CompareFn compares values on collisions
 type CompareFn func(old, new interface{}) (result interface{})
 
-// ExpireFn will be called when record is expired
+// ExpireFn a callback that will be called when record is expired
 type ExpireFn func(key, value interface{})
 
 type item struct {
