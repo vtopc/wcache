@@ -21,7 +21,7 @@ type Cache struct {
 	// resetTTL bool
 }
 
-// CompareFn compares values on collisions
+// CompareFn compares values on key collisions
 type CompareFn func(old, new interface{}) (result interface{})
 
 // ExpireFn a callback that will be called when record is expired
@@ -60,15 +60,17 @@ func (c *Cache) SetWithTTL(key, value interface{}, ttl time.Duration) error {
 		if !ok {
 			return errors.New("internal error: failed to assert item")
 		}
-	} else {
-		// create new one
-		update := make(chan interface{}, 1)
-		go c.runVault(key, update, ttl)
-		i = item{update: update}
-		c.m.Store(key, i)
+
+		i.update <- value
+
+		return nil
 	}
 
-	i.update <- value
+	// create new one
+	update := make(chan interface{}, 1)
+	go c.runVault(key, value, update, ttl)
+	i = item{update: update}
+	c.m.Store(key, i)
 
 	return nil
 }
@@ -87,9 +89,7 @@ func (c *Cache) SetWithTTL(key, value interface{}, ttl time.Duration) error {
 // }
 
 // runVault - creates storage for value
-func (c *Cache) runVault(key interface{}, update <-chan interface{}, ttl time.Duration) {
-	var value interface{}
-
+func (c *Cache) runVault(key, value interface{}, update <-chan interface{}, ttl time.Duration) {
 	timer := time.NewTimer(ttl)
 	defer timer.Stop()
 
