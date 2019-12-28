@@ -12,6 +12,7 @@ type Cache struct {
 	m          sync.Map
 	expireFn   ExpireFn
 	defaultTTL time.Duration
+	wg         sync.WaitGroup
 
 	// thread unsafe(TODO):
 	CompareFn CompareFn
@@ -29,7 +30,6 @@ type ExpireFn func(key, value interface{})
 type item struct {
 	setter chan interface{}
 	getter chan interface{}
-	// TODO: add wait group
 }
 
 func New(ctx context.Context, defaultTTL time.Duration, expireFn ExpireFn) *Cache {
@@ -102,6 +102,9 @@ func (c *Cache) get(key interface{}) (item, bool) {
 
 // runVault - creates storage for value
 func (c *Cache) runVault(key, value interface{}, i item, ttl time.Duration) {
+	c.wg.Add(1)
+	defer c.wg.Done()
+
 	timer := time.NewTimer(ttl)
 	defer timer.Stop()
 
