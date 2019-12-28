@@ -46,3 +46,5 @@ func TestCache_Get(t *testing.T) {
 		})
 	}
 }
+
+// TODO: add check that Set overwrites value
