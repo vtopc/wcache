@@ -28,7 +28,7 @@ type CompareFn func(old, new interface{}) (result interface{})
 type ExpireFn func(key, value interface{})
 
 type item struct {
-	setter chan<- interface{}
+	setter chan interface{}
 	// TODO: add wait group
 }
 
@@ -52,11 +52,10 @@ func (c *Cache) Set(key, value interface{}) error {
 // SetWithTTL sets the value for a key.
 func (c *Cache) SetWithTTL(key, value interface{}, ttl time.Duration) error {
 	v, exists := c.m.Load(key)
-	var i item
 	if exists {
 		// update
 		var ok bool
-		i, ok = v.(item)
+		i, ok := v.(item)
 		if !ok {
 			return errors.New("internal error: failed to assert item")
 		}
@@ -67,9 +66,8 @@ func (c *Cache) SetWithTTL(key, value interface{}, ttl time.Duration) error {
 	}
 
 	// create new one
-	setter := make(chan interface{}, 1)
-	go c.runVault(key, value, setter, ttl)
-	i = item{setter: setter}
+	i := newItem()
+	go c.runVault(key, value, i, ttl)
 	c.m.Store(key, i)
 
 	return nil
@@ -89,13 +87,13 @@ func (c *Cache) SetWithTTL(key, value interface{}, ttl time.Duration) error {
 // }
 
 // runVault - creates storage for value
-func (c *Cache) runVault(key, value interface{}, setter <-chan interface{}, ttl time.Duration) {
+func (c *Cache) runVault(key, value interface{}, i item, ttl time.Duration) {
 	timer := time.NewTimer(ttl)
 	defer timer.Stop()
 
 	for {
 		select {
-		case newValue := <-setter:
+		case newValue := <-i.setter:
 			if c.CompareFn != nil {
 				value = c.CompareFn(value, newValue)
 			} else {
@@ -112,5 +110,11 @@ func (c *Cache) runVault(key, value interface{}, setter <-chan interface{}, ttl 
 			c.expireFn(key, value)
 			return
 		}
+	}
+}
+
+func newItem() item {
+	return item{
+		setter: make(chan interface{}),
 	}
 }
