@@ -63,7 +63,7 @@ func (c *Cache) SetWithTTL(key, value interface{}, ttl time.Duration) error {
 	} else {
 		// create new one
 		update := make(chan interface{}, 1)
-		go c.newVault(key, update, ttl)
+		go c.runVault(key, update, ttl)
 		i = item{update: update}
 		c.m.Store(key, i)
 	}
@@ -86,8 +86,8 @@ func (c *Cache) SetWithTTL(key, value interface{}, ttl time.Duration) error {
 // 	c.m.Range()
 // }
 
-// newVault - creates storage for value
-func (c *Cache) newVault(key interface{}, update <-chan interface{}, ttl time.Duration) {
+// runVault - creates storage for value
+func (c *Cache) runVault(key interface{}, update <-chan interface{}, ttl time.Duration) {
 	var value interface{}
 
 	timer := time.NewTimer(ttl)
