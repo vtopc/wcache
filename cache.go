@@ -74,13 +74,20 @@ func (c *Cache) SetWithTTL(key, value interface{}, ttl time.Duration) error {
 	return nil
 }
 
-// TODO:
-// // Get returns the value stored in the map for a key, or nil if no
-// // value is present.
-// // The ok result indicates whether value was found in the map.
-// func (c *Cache) Get(key interface{}) (value interface{}, ok bool) {
-// 	return c.m.Load(key)
-// }
+// Get returns the value stored in the map for a key, or nil if no
+// value is present.
+// The ok result indicates whether value was found in the map.
+func (c *Cache) Get(key interface{}) (value interface{}, ok bool) {
+	v, ok := c.m.Load(key)
+	if !ok {
+		return nil, false
+	}
+
+	i := v.(item)
+	value = <-i.getter
+
+	return value, true
+}
 
 // TODO: add instead of context?
 // func (c *Cache) Sync() {
