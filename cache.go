@@ -27,11 +27,6 @@ type CompareFn func(old, new interface{}) (result interface{})
 // ExpireFn a callback that will be called when record is expired
 type ExpireFn func(key, value interface{})
 
-type item struct {
-	setter chan interface{}
-	getter chan interface{}
-}
-
 func New(ctx context.Context, defaultTTL time.Duration, expireFn ExpireFn) *Cache {
 	if expireFn == nil {
 		panic("expireFn can't be nil")
@@ -54,7 +49,7 @@ func (c *Cache) SetWithTTL(key, value interface{}, ttl time.Duration) {
 	i, found := c.get(key)
 	if found {
 		// update
-		i.setter <- value
+		i.set(value)
 
 		return
 	}
@@ -76,7 +71,7 @@ func (c *Cache) Get(key interface{}) (value interface{}, found bool) {
 		return nil, false
 	}
 
-	return <-i.getter, true
+	return i.get(), true
 }
 
 // TODO: add Delete with triggering expire func
@@ -129,12 +124,5 @@ func (c *Cache) runVault(key, value interface{}, i item, ttl time.Duration) {
 			c.expireFn(key, value)
 			return
 		}
-	}
-}
-
-func newItem() item {
-	return item{
-		setter: make(chan interface{}),
-		getter: make(chan interface{}),
 	}
 }
