@@ -29,6 +29,7 @@ type ExpireFn func(key, value interface{})
 
 type item struct {
 	setter chan interface{}
+	getter chan interface{}
 	// TODO: add wait group
 }
 
@@ -101,6 +102,8 @@ func (c *Cache) runVault(key, value interface{}, i item, ttl time.Duration) {
 				value = newValue
 			}
 
+		case i.getter <- value:
+
 		case <-timer.C:
 			c.m.Delete(key)
 			c.expireFn(key, value)
@@ -116,5 +119,6 @@ func (c *Cache) runVault(key, value interface{}, i item, ttl time.Duration) {
 func newItem() item {
 	return item{
 		setter: make(chan interface{}),
+		getter: make(chan interface{}),
 	}
 }
