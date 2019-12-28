@@ -37,8 +37,7 @@ func TestCache_Get(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			c := New(context.Background(), time.Minute, NoopExpire)
 
-			err := c.Set(tt.setKey, tt.value)
-			require.NoError(t, err)
+			c.Set(tt.setKey, tt.value)
 
 			v, ok := c.Get(tt.getKey)
 			require.Equal(t, tt.wantOk, ok)
@@ -50,12 +49,12 @@ func TestCache_Get(t *testing.T) {
 func TestCache_Set(t *testing.T) {
 	t.Run("overwrites_value", func(t *testing.T) {
 		c := New(context.Background(), time.Minute, NoopExpire)
-		_ = c.Set(1, "value1")
+		c.Set(1, "value1")
 		v, ok := c.Get(1)
 		require.True(t, ok)
 		assert.Equal(t, "value1", v)
 
-		_ = c.Set(1, "value2")
+		c.Set(1, "value2")
 		v2, ok := c.Get(1)
 		require.True(t, ok)
 		assert.Equal(t, "value2", v2)

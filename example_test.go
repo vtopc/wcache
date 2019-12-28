@@ -16,9 +16,9 @@ func ExampleCache() {
 
 	c := wcache.New(context.Background(), 100*time.Millisecond, expireFn)
 	// with custom TTL:
-	_ = c.SetWithTTL(2, "to expire second", 200*time.Millisecond)
+	c.SetWithTTL(2, "to expire second", 200*time.Millisecond)
 	// with default TTL:
-	_ = c.Set(1, "to expire first")
+	c.Set(1, "to expire first")
 
 	time.Sleep(300 * time.Millisecond)
 

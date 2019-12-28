@@ -45,18 +45,18 @@ func New(ctx context.Context, defaultTTL time.Duration, expireFn ExpireFn) *Cach
 }
 
 // SetWithTTL sets the value for a key with default TTL
-func (c *Cache) Set(key, value interface{}) error {
-	return c.SetWithTTL(key, value, c.defaultTTL)
+func (c *Cache) Set(key, value interface{}) {
+	c.SetWithTTL(key, value, c.defaultTTL)
 }
 
 // SetWithTTL sets the value for a key.
-func (c *Cache) SetWithTTL(key, value interface{}, ttl time.Duration) error {
+func (c *Cache) SetWithTTL(key, value interface{}, ttl time.Duration) {
 	i, found := c.get(key)
 	if found {
 		// update
 		i.setter <- value
 
-		return nil
+		return
 	}
 
 	// create new one
@@ -64,7 +64,7 @@ func (c *Cache) SetWithTTL(key, value interface{}, ttl time.Duration) error {
 	go c.runVault(key, value, i, ttl)
 	c.m.Store(key, i)
 
-	return nil
+	return
 }
 
 // Get returns the value stored in the map for a key, or nil if no
