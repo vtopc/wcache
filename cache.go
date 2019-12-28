@@ -27,6 +27,9 @@ type CompareFn func(old, new interface{}) (result interface{})
 // ExpireFn a callback that will be called when record is expired
 type ExpireFn func(key, value interface{})
 
+// New creates fully functional cache.
+//
+// ctx is used for shutdown and triggering expireFn for all records ignoring the TTL.
 func New(ctx context.Context, defaultTTL time.Duration, expireFn ExpireFn) *Cache {
 	if expireFn == nil {
 		panic("expireFn can't be nil")
