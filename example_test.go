@@ -14,13 +14,13 @@ func ExampleCache() {
 		fmt.Printf("%d: %s\n", key, value)
 	}
 
-	c := wcache.New(context.Background(), time.Second, expireFn)
+	c := wcache.New(context.Background(), 100*time.Millisecond, expireFn)
 	// with custom TTL:
-	_ = c.SetWithTTL(2, "to expire second", 2*time.Second)
+	_ = c.SetWithTTL(2, "to expire second", 200*time.Millisecond)
 	// with default TTL:
 	_ = c.Set(1, "to expire first")
 
-	time.Sleep(3 * time.Second)
+	time.Sleep(300 * time.Millisecond)
 
 	// Output:
 	// 1: to expire first
