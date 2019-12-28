@@ -4,10 +4,10 @@
 
 Write cache with delayed sync.
 
-Implements a cache with TTL(expiration).
+Implements a cache with TTL(expiration per each record).
 `expireFn` will be called when record is expired.
 
-Also could be used as Pub/Sub with aggregation.
+Also could be used as Pub/Sub with aggregation. Or for aggregating metrics.
 
 Context could be used for flush during graceful shutdown.
 
