@@ -4,6 +4,6 @@ package wcache
 type ExpireFn func(key, value interface{})
 
 // NoopExpire does nothing
-func NoopExpire(_, _ interface{}) {}
+func NoopExpire(key, value interface{}) {}
 
 // TODO: add ChanExpire
