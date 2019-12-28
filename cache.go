@@ -121,6 +121,7 @@ func (c *Cache) runVault(key, value interface{}, i item, ttl time.Duration) {
 			return
 
 		case <-c.done:
+			// global shutdown
 			c.expireFn(key, value)
 			return
 		}
