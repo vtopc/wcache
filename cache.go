@@ -52,8 +52,8 @@ func (c *Cache) Set(key, value interface{}) error {
 
 // SetWithTTL sets the value for a key.
 func (c *Cache) SetWithTTL(key, value interface{}, ttl time.Duration) error {
-	v, exists := c.m.Load(key)
-	if exists {
+	v, ok := c.m.Load(key)
+	if ok {
 		// update
 		var ok bool
 		i, ok := v.(item)
