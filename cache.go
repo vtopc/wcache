@@ -23,7 +23,7 @@ type Cache struct {
 
 // New creates fully functional cache.
 //
-// ctx is used for shutdown and triggering expireFn for all records ignoring the TTL.
+// ctx is used for shutdown.
 func New(ctx context.Context, defaultTTL time.Duration, expireFn ExpireFn) *Cache {
 	if expireFn == nil {
 		panic("expireFn can't be nil")
@@ -62,7 +62,7 @@ func (c *Cache) SetWithTTL(key, value interface{}, ttl time.Duration) {
 
 // Get returns the value stored in the map for a key, or nil if no
 // value is present.
-// The found result indicates whether value was found in the map.
+// The found result indicates whether value was found in the cache.
 func (c *Cache) Get(key interface{}) (value interface{}, found bool) {
 	i, found := c.get(key)
 	if !found {
@@ -83,7 +83,7 @@ func (c *Cache) Delete(key interface{}) {
 	i.delete()
 }
 
-// Done returns a channel that's closed when work done(expireFn called for all records).
+// Done returns a channel that will be closed when work done(expireFn called for all records).
 // This channel would not be closed if context is not canceled(expired, etc.).
 func (c *Cache) Done() <-chan struct{} {
 	done := make(chan struct{})
