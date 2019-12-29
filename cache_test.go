@@ -60,3 +60,40 @@ func TestCache_Set(t *testing.T) {
 		assert.Equal(t, "value2", v2)
 	})
 }
+
+func TestCache_Delete(t *testing.T) {
+	const (
+		setKey = 1
+		value  = "test"
+	)
+
+	tests := map[string]struct {
+		key    interface{}
+		wantOk bool
+	}{
+		"found": {
+			key:    setKey,
+			wantOk: false,
+		},
+		"not_found": {
+			key:    100500,
+			wantOk: false,
+		},
+	}
+
+	c := New(context.Background(), time.Minute, NoopExpire)
+
+	t.Run("prepare", func(t *testing.T) {
+		c.Set(setKey, value)
+		_, ok := c.Get(setKey)
+		require.True(t, ok)
+	})
+
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			c.Delete(tt.key)
+			_, ok := c.Get(tt.key)
+			require.Equal(t, tt.wantOk, ok)
+		})
+	}
+}

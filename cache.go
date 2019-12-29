@@ -71,7 +71,15 @@ func (c *Cache) Get(key interface{}) (value interface{}, found bool) {
 	return i.get(), true
 }
 
-// TODO: add Delete with triggering expire func
+func (c *Cache) Delete(key interface{}) {
+	i, found := c.get(key)
+	if !found {
+		return
+	}
+
+	c.m.Delete(key)
+	i.delete()
+}
 
 // TODO: add instead of context?
 // func (c *Cache) Sync() {
