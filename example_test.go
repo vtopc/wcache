@@ -20,3 +20,18 @@ func Example() {
 	// 1: to expire first
 	// 2: to expire second
 }
+
+func ExampleCache_Done() {
+	ctx, cancel := context.WithCancel(context.Background())
+	c := wcache.New(ctx, time.Hour, wcache.PrintlnOnExpire)
+
+	c.Set(1, "my value") // should expire in an hour
+	time.Sleep(time.Millisecond)
+
+	cancel()
+	// but will expire after context cancellation
+	<-c.Done()
+
+	// Output:
+	// 1: my value
+}

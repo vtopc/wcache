@@ -83,7 +83,7 @@ func (c *Cache) Delete(key interface{}) {
 }
 
 // Done returns a channel that's closed when work done(expireFn called for all records).
-// This channel would not be closed if context is not canceled.
+// This channel would not be closed if context is not canceled(expired, etc.).
 func (c *Cache) Done() <-chan struct{} {
 	done := make(chan struct{})
 
