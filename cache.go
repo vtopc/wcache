@@ -8,7 +8,7 @@ import (
 
 type Cache struct {
 	// thread safe:
-	done       <-chan struct{} // context cancel
+	globalDone <-chan struct{} // context cancel
 	m          sync.Map
 	expireFn   ExpireFn
 	defaultTTL time.Duration
@@ -30,7 +30,7 @@ func New(ctx context.Context, defaultTTL time.Duration, expireFn ExpireFn) *Cach
 	}
 
 	return &Cache{
-		done:       ctx.Done(),
+		globalDone: ctx.Done(),
 		defaultTTL: defaultTTL,
 		expireFn:   expireFn,
 	}
@@ -89,7 +89,7 @@ func (c *Cache) Done() <-chan struct{} {
 	done := make(chan struct{})
 
 	go func() {
-		<-c.done
+		<-c.globalDone
 		// after context is canceled, wait for all vaults to be closed:
 		c.wg.Wait()
 		close(done)
@@ -139,7 +139,7 @@ func (c *Cache) runVault(key, value interface{}, i item, ttl time.Duration) {
 			c.expireFn(key, value)
 			return
 
-		case <-c.done:
+		case <-c.globalDone:
 			// global shutdown
 			c.expireFn(key, value)
 			return
