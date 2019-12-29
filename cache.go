@@ -98,10 +98,8 @@ func (c *Cache) Done() <-chan struct{} {
 	return done
 }
 
-// TODO: add instead of context?
-// func (c *Cache) Sync() {
-// 	c.m.Range()
-// }
+// TODO: add instead of context and Done()?
+// func (c *Cache) Sync() {}
 
 func (c *Cache) get(key interface{}) (item, bool) {
 	v, found := c.m.Load(key)
