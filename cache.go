@@ -52,6 +52,7 @@ func (c *Cache) SetWithTTL(key, value interface{}, ttl time.Duration) {
 	}
 
 	// create new one
+	c.wg.Add(1)
 	i = newItem()
 	go c.runVault(key, value, i, ttl)
 	c.m.Store(key, i)
@@ -118,7 +119,6 @@ func (c *Cache) get(key interface{}) (item, bool) {
 
 // runVault - creates storage for value
 func (c *Cache) runVault(key, value interface{}, i item, ttl time.Duration) {
-	c.wg.Add(1)
 	defer c.wg.Done()
 
 	timer := time.NewTimer(ttl)

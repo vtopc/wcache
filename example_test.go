@@ -26,10 +26,8 @@ func ExampleCache_Done() {
 	c := wcache.New(ctx, time.Hour, wcache.PrintlnOnExpire)
 
 	c.Set(1, "my value") // should expire in an hour
-	time.Sleep(time.Millisecond)
-
-	cancel()
 	// but will expire after context cancellation
+	cancel()
 	<-c.Done()
 
 	// Output:
