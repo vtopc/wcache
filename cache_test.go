@@ -81,7 +81,8 @@ func TestCache_Delete(t *testing.T) {
 		},
 	}
 
-	c := New(context.Background(), time.Minute, NoopExpire)
+	ctx, cancel := context.WithCancel(context.Background())
+	c := New(ctx, time.Minute, NoopExpire)
 
 	t.Run("prepare", func(t *testing.T) {
 		c.Set(setKey, value)
@@ -96,4 +97,9 @@ func TestCache_Delete(t *testing.T) {
 			require.Equal(t, tt.wantOk, ok)
 		})
 	}
+
+	t.Run("vaults_are_closed", func(t *testing.T) {
+		cancel()
+		<-c.Done()
+	})
 }

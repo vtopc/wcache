@@ -8,7 +8,7 @@ import (
 
 type Cache struct {
 	// thread safe:
-	done       <-chan struct{}
+	done       <-chan struct{} // context cancel
 	m          sync.Map
 	expireFn   ExpireFn
 	defaultTTL time.Duration
@@ -71,6 +71,7 @@ func (c *Cache) Get(key interface{}) (value interface{}, found bool) {
 	return i.get(), true
 }
 
+// Delete deletes the value for a key.
 func (c *Cache) Delete(key interface{}) {
 	i, found := c.get(key)
 	if !found {
@@ -79,6 +80,21 @@ func (c *Cache) Delete(key interface{}) {
 
 	c.m.Delete(key)
 	i.delete()
+}
+
+// Done returns a channel that's closed when work done(expireFn called for all records).
+// This channel would not be closed if context is not canceled.
+func (c *Cache) Done() <-chan struct{} {
+	done := make(chan struct{})
+
+	go func() {
+		<-c.done
+		// after context is canceled, wait for all vaults to be closed:
+		c.wg.Wait()
+		close(done)
+	}()
+
+	return done
 }
 
 // TODO: add instead of context?
