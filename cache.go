@@ -89,6 +89,8 @@ func (c *Cache) Delete(key string) {
 		return
 	}
 
+	// vault can be closed in the background as item already deleted from the map(together with
+	// getter and setter):
 	i.delete()
 }
 
