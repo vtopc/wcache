@@ -107,20 +107,6 @@ func (c *Cache) Done() <-chan struct{} {
 	return done
 }
 
-// func (c *Cache) get(key string) (item, bool) {
-// 	v, found := c.m.Load(key)
-// 	if !found {
-// 		return item{}, false
-// 	}
-//
-// 	i, ok := v.(item)
-// 	if !ok {
-// 		panic("internal error: failed to assert item")
-// 	}
-//
-// 	return i, true
-// }
-
 func (c *Cache) delete(key string) (item, bool) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
