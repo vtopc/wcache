@@ -7,11 +7,13 @@ import (
 )
 
 type Cache struct {
-	// thread safe:
-	globalDone <-chan struct{} // context cancel
-	m          sync.Map
 	expireFn   ExpireFn
 	defaultTTL time.Duration
+	m          mapType
+
+	// thread safe:
+	mu         sync.RWMutex
+	globalDone <-chan struct{} // context cancel
 	wg         sync.WaitGroup
 
 	// thread unsafe(TODO):
@@ -20,6 +22,8 @@ type Cache struct {
 	// TODO: add reset TTL on hit/set
 	// resetTTL bool
 }
+
+type mapType map[string]item
 
 // New creates fully functional cache.
 //
@@ -30,6 +34,7 @@ func New(ctx context.Context, defaultTTL time.Duration, expireFn ExpireFn) *Cach
 	}
 
 	return &Cache{
+		m:          make(mapType),
 		globalDone: ctx.Done(),
 		defaultTTL: defaultTTL,
 		expireFn:   expireFn,
@@ -37,14 +42,16 @@ func New(ctx context.Context, defaultTTL time.Duration, expireFn ExpireFn) *Cach
 }
 
 // SetWithTTL sets the value for a key with default TTL
-func (c *Cache) Set(key, value interface{}) {
+func (c *Cache) Set(key string, value interface{}) {
 	c.SetWithTTL(key, value, c.defaultTTL)
 }
 
 // SetWithTTL sets the value for a key.
-// TODO: switch to LoadOrStore() for atomicity.
-func (c *Cache) SetWithTTL(key, value interface{}, ttl time.Duration) {
-	i, found := c.get(key)
+func (c *Cache) SetWithTTL(key string, value interface{}, ttl time.Duration) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	i, found := c.m[key]
 	if found {
 		// update
 		i.set(value)
@@ -55,17 +62,18 @@ func (c *Cache) SetWithTTL(key, value interface{}, ttl time.Duration) {
 	// create new one
 	c.wg.Add(1)
 	i = newItem()
+	c.m[key] = i
 	go c.runVault(key, value, i, ttl)
-	c.m.Store(key, i)
-
-	return
 }
 
 // Get returns the value stored in the map for a key, or nil if no
 // value is present.
 // The found result indicates whether value was found in the cache.
-func (c *Cache) Get(key interface{}) (value interface{}, found bool) {
-	i, found := c.get(key)
+func (c *Cache) Get(key string) (value interface{}, found bool) {
+	c.mu.RLock()
+	i, found := c.m[key]
+	c.mu.RUnlock()
+
 	if !found {
 		return nil, false
 	}
@@ -74,13 +82,13 @@ func (c *Cache) Get(key interface{}) (value interface{}, found bool) {
 }
 
 // Delete deletes the value for a key.
-func (c *Cache) Delete(key interface{}) {
-	i, found := c.get(key)
+func (c *Cache) Delete(key string) {
+	i, found := c.delete(key)
 	if !found {
+		// nothing to do
 		return
 	}
 
-	c.m.Delete(key)
 	i.delete()
 }
 
@@ -99,22 +107,36 @@ func (c *Cache) Done() <-chan struct{} {
 	return done
 }
 
-func (c *Cache) get(key interface{}) (item, bool) {
-	v, found := c.m.Load(key)
+// func (c *Cache) get(key string) (item, bool) {
+// 	v, found := c.m.Load(key)
+// 	if !found {
+// 		return item{}, false
+// 	}
+//
+// 	i, ok := v.(item)
+// 	if !ok {
+// 		panic("internal error: failed to assert item")
+// 	}
+//
+// 	return i, true
+// }
+
+func (c *Cache) delete(key string) (item, bool) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	i, found := c.m[key]
 	if !found {
-		return item{}, false
+		return i, false
 	}
 
-	i, ok := v.(item)
-	if !ok {
-		panic("internal error: failed to assert item")
-	}
+	delete(c.m, key)
 
 	return i, true
 }
 
 // runVault - creates storage for value
-func (c *Cache) runVault(key, value interface{}, i item, ttl time.Duration) {
+func (c *Cache) runVault(key string, value interface{}, i item, ttl time.Duration) {
 	defer c.wg.Done()
 
 	timer := time.NewTimer(ttl)
@@ -133,7 +155,7 @@ func (c *Cache) runVault(key, value interface{}, i item, ttl time.Duration) {
 		case i.getter <- value:
 
 		case <-timer.C:
-			c.m.Delete(key)
+			c.delete(key)
 			c.expireFn(key, value)
 			return
 

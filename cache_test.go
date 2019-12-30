@@ -11,22 +11,22 @@ import (
 
 func TestCache_Get(t *testing.T) {
 	tests := map[string]struct {
-		setKey    interface{}
-		getKey    interface{}
+		setKey    string
+		getKey    string
 		value     interface{}
 		wantValue interface{}
 		wantOk    bool
 	}{
 		"found": {
-			setKey:    1,
-			getKey:    1,
+			setKey:    "exists",
+			getKey:    "exists",
 			value:     "test",
 			wantValue: "test",
 			wantOk:    true,
 		},
 		"not_found": {
-			setKey:    1,
-			getKey:    100500,
+			setKey:    "exists",
+			getKey:    "not exists",
 			value:     "test",
 			wantValue: nil,
 			wantOk:    false,
@@ -48,14 +48,16 @@ func TestCache_Get(t *testing.T) {
 
 func TestCache_Set(t *testing.T) {
 	t.Run("overwrites_value", func(t *testing.T) {
+		const key = "1"
+
 		c := New(context.Background(), time.Minute, NoopExpire)
-		c.Set(1, "value1")
-		v, ok := c.Get(1)
+		c.Set(key, "value1")
+		v, ok := c.Get(key)
 		require.True(t, ok)
 		assert.Equal(t, "value1", v)
 
-		c.Set(1, "value2")
-		v2, ok := c.Get(1)
+		c.Set(key, "value2")
+		v2, ok := c.Get(key)
 		require.True(t, ok)
 		assert.Equal(t, "value2", v2)
 	})
@@ -63,12 +65,12 @@ func TestCache_Set(t *testing.T) {
 
 func TestCache_Delete(t *testing.T) {
 	const (
-		setKey = 1
+		setKey = "exists"
 		value  = "test"
 	)
 
 	tests := map[string]struct {
-		key    interface{}
+		key    string
 		wantOk bool
 	}{
 		"found": {
@@ -76,7 +78,7 @@ func TestCache_Delete(t *testing.T) {
 			wantOk: false,
 		},
 		"not_found": {
-			key:    100500,
+			key:    "not exists",
 			wantOk: false,
 		},
 	}

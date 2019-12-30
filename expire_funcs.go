@@ -17,7 +17,7 @@ func NoopExpire(key, value interface{}) {}
 
 // PrintOnExpire a dummy ExpireFn that will print key, value when record is expired
 func PrintlnOnExpire(key, value interface{}) {
-	fmt.Printf("%d: %s\n", key, value)
+	fmt.Printf("%s: %v\n", key, value)
 }
 
 // ChanExpire returns a ExpireFn that will send key, value to the channel `ch` when record is expired
