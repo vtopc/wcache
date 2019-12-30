@@ -42,7 +42,7 @@ func (c *Cache) Set(key, value interface{}) {
 }
 
 // SetWithTTL sets the value for a key.
-// TODO: switch to LoadOrStore()
+// TODO: switch to LoadOrStore() for atomicity.
 func (c *Cache) SetWithTTL(key, value interface{}, ttl time.Duration) {
 	i, found := c.get(key)
 	if found {
