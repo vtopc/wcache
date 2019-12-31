@@ -34,6 +34,7 @@ func TestCache_Get(t *testing.T) {
 	}
 
 	for name, tt := range tests {
+		tt := tt
 		t.Run(name, func(t *testing.T) {
 			c := New(context.Background(), time.Minute, NoopExpire)
 
@@ -93,6 +94,7 @@ func TestCache_Delete(t *testing.T) {
 	})
 
 	for name, tt := range tests {
+		tt := tt
 		t.Run(name, func(t *testing.T) {
 			c.Delete(tt.key)
 			_, ok := c.Get(tt.key)
