@@ -3,7 +3,7 @@
 [![Godoc Reference][godoc-img]][godoc]
 
 Implements a cache with TTL(expiration).
-`expireFn` will be called when record is expired.
+An expiration callback(`expireFn`) will be called when record is expired.
 
 ### Features
 * Thread-safe.
@@ -18,8 +18,7 @@ ignoring they TTL.
 `go get github.com/vtopc/wcache`
 
 ### TODO
-* Auto-Extending expiration on `Get` and/or `Set`.
-* Benchmarks.
+* Optional auto-extending expiration on `Get` and/or `Set`.
 
 [godoc]: https://godoc.org/github.com/vtopc/wcache
 [godoc-img]: https://godoc.org/github.com/vtopc/wcache?status.svg
