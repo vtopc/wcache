@@ -69,6 +69,7 @@ func BenchmarkSetDeleteRandom(b *testing.B) {
 
 	for n := 0; n < b.N; n++ {
 		c.Set(uuid.New().String(), value)
+		// TODO: call Delete!
 	}
 }
 
