@@ -23,6 +23,21 @@ func BenchmarkSetSameKey(b *testing.B) {
 	}
 }
 
+func BenchmarkSetSameKeyWithTTL(b *testing.B) {
+	const (
+		key   = "exists"
+		value = "some test value"
+	)
+	ttl := time.Millisecond
+
+	c := New(context.Background(), ttl, NoopExpire)
+
+	for n := 0; n < b.N; n++ {
+		c.Set(key, value)
+		time.Sleep(ttl)
+	}
+}
+
 func BenchmarkSetABitRandomKeys(b *testing.B) {
 	const value = "some test value"
 
