@@ -9,4 +9,4 @@ deps:
 
 .PHONY: bench
 bench:
-	go test -bench=. -cpu=1,2,4 -benchmem
+	go test -bench=. -cpu=1,2,4,8 -benchmem
