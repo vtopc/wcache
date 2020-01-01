@@ -68,7 +68,9 @@ func BenchmarkSetDeleteRandom(b *testing.B) {
 	c := New(context.Background(), time.Hour, NoopExpire)
 
 	for n := 0; n < b.N; n++ {
+		key := uuid.New().String()
 		c.Set(uuid.New().String(), value)
+		c.Delete(key)
 	}
 }
 
