@@ -14,6 +14,9 @@ By default, will overwrite value.
 * Graceful shutdown(using context). Will call expiration callback for all records,
 ignoring they TTL.
 
+### Install
+`go get github.com/vtopc/wcache`
+
 ### TODO
 * Auto-Extending expiration on `Get` and/or `Set`.
 * Benchmarks.
