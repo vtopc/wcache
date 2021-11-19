@@ -27,3 +27,6 @@ ignoring they TTL.
 
 [lic-url]: https://github.com/vtopc/wcache/blob/master/LICENSE
 [lic-img]: http://img.shields.io/badge/license-MIT-red.svg?style=flat
+
+### Similar projects
+* https://github.com/mailgun/holster#expirecache
